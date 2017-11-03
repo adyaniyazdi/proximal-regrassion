@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
 import tensorflow as tf;
-
+//hi
 
 minimum=[1,3]
 

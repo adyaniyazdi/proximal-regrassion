@@ -17,7 +17,7 @@ import theano.tensor as T;
 np.random.seed(123)
 
 #number of samples in total
-N=1000
+N=200
 
 #true probability of class 1 and 0
 p1=.6;
@@ -49,7 +49,7 @@ x0 = sp.stats.multivariate_normal.rvs(true_mu0, true_cov, size=n0)
 
 #### END OF FAKE DATASET GENERATION
 
-
+print("End of fake dataset generation")
 #### START OF MODEL BUILDING AND ESTIMATION
 
 # instantiate an empty PyMC3 model

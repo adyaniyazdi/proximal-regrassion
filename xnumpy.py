@@ -2,7 +2,9 @@ import numpy as np
 import math
 
 
-desired_accuracy = 0.01
+#lambda
+sparsity_param = 0.1
+
 num_groups = 5
 group_size = 5
 group_overlap = 2
@@ -15,6 +17,9 @@ for i in range(num_groups):
 print("groups: ", groups)
 #print(list(range(7, 17)))
 
+
+desired_accuracy = 0.01
+mu = desired_accuracy / groups.__len__()
 
 num_examples = 12
 num_features = group_overlap + (num_groups * (group_size - group_overlap))
@@ -43,11 +48,11 @@ def group_weight(group):
     return math.sqrt(group.__len__())
 
 #From equation 4
-def build_c(groups, sparsity_param, j):
+def build_c(groups, sparsity_param, num_features):
     c_height = 0
     for group in groups:
         c_height += group.__len__()
-    c = np.zeros((c_height, j))
+    c = np.zeros((c_height, num_features))
     i = 0
     for group in groups:
         w = group_weight(group)
@@ -80,11 +85,12 @@ print("abs_gamma", abs_gamma(groups, num_examples, sparsity_param=3.0))
 def lipschitz_constant(x, groups, num_examples, sparsity_param):
     xt_x = np.matmul(np.transpose(x),x)
     eigens = np.linalg.eig(xt_x)[0].tolist()
-    print("eigens", eigens)
+    eigens = [elem.real for elem in eigens if elem.imag == 0.0]
+    #print("eigens", eigens)
     max_eigen = max(eigens)
     #print("max_eigen", max_eigen)
     abs_g = abs_gamma(groups, num_examples, sparsity_param)
-    mu = desired_accuracy / groups.__len__()
+
     return max_eigen + (abs_g / mu)
 
 print("lip constant", lipschitz_constant(x, groups, num_examples, 3.0))
@@ -93,34 +99,65 @@ w0 = np.zeros(num_features)
 
 # Algorithm steps
 
-def gen_alpha(beta, groups):
+# def gen_alpha(beta, groups):
+#     alpha_gs = []
+#     for group in groups:
+#         beta_g = []
+#         for j in group:
+#             beta_g.append(beta[j])
+#         #beta_gs.append(beta_g)
+#         norm = np.linalg.norm(np.array(beta_g))
+#         #print("norm", norm)
+#         alpha_g = []
+#         for b in beta_g:
+#             a =  b/norm if norm > 0 else 0
+#             alpha_g.append(a)
+#         print("b/a", beta_g, alpha_g)
+#         #print("norm alpha", np.linalg.norm(np.array(alpha_g)))
+#         alpha_gs += alpha_g
+#     return alpha_gs
+#
+# print("alpha",gen_alpha(b, groups))
+
+def shrinkage(arr):
+    norm = np.linalg.norm(arr)
+    if norm > 1.0:
+        return arr/norm
+    else:
+        return arr
+
+def gen_opt_alpha(beta, groups, sparsity_param):
     alpha_gs = []
     for group in groups:
         beta_g = []
         for j in group:
             beta_g.append(beta[j])
-        #beta_gs.append(beta_g)
-        norm = np.linalg.norm(np.array(beta_g))
-        #print("norm", norm)
-        alpha_g = []
-        for b in beta_g:
-            a =  b/norm if norm > 0 else 0
-            alpha_g.append(a)
-        print("b/a", beta_g, alpha_g)
-        #print("norm alpha", np.linalg.norm(np.array(alpha_g)))
-        alpha_gs += alpha_g
-    return alpha_gs
+        bg = np.array(beta_g)
+        ag = bg * sparsity_param * group_weight(group) / mu
 
-print("alpha",gen_alpha(b, groups))
+        print("b/a", beta_g, shrinkage(ag))
+        # print("norm alpha", np.linalg.norm(np.array(alpha_g)))
+        alpha_gs += shrinkage(ag).tolist()
+    return np.array(alpha_gs)
+
+print("opt alpha", gen_opt_alpha(b, groups, sparsity_param))
 
 
 
-
-
-
-
+#Equation 9
+def f_squiggle_gradient(x, y, b, groups, sparsity_param):
+    opt_alpha = gen_opt_alpha(b, groups, sparsity_param)
+    return (np.transpose(x,y) * ((x * b) - y)) + (c * opt_alpha)
 
 # Algorithm
+
+weights_t = []
+weights_t.append(np.zeros(num_features))
+for t in range(5):
+    #step 1
+    gradient = f_squiggle_gradient(weights_t[i])
+    #step 2
+    
 
 
 

@@ -21,7 +21,7 @@ print("groups: ", groups)
 desired_accuracy = 0.01
 mu = desired_accuracy / groups.__len__()
 
-num_examples = 12 #N
+num_examples = 500 #N
 num_features = group_overlap + (num_groups * (group_size - group_overlap)) #J
 print("j=", num_features)
 
@@ -157,7 +157,7 @@ weights_t = []
 beta_t = []
 z_t = []
 weights_t.append(np.zeros(num_features))
-for t in range(10000):
+for t in range(3000):
     #step 1
     gradient = f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param)
     #step 2

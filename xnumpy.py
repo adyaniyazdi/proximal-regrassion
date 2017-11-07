@@ -78,7 +78,7 @@ def abs_gamma(groups, num_examples, sparsity_param): #TODO switch inner and oute
     # print(weight_totals)
     return sparsity_param * max(weight_totals)
 
-print("abs_gamma", abs_gamma(groups, num_examples, sparsity_param=3.0))
+print("abs_gamma", abs_gamma(groups, num_examples, sparsity_param=sparsity_param))
 
 
 #From equation 10
@@ -93,7 +93,8 @@ def lipschitz_constant(x, groups, num_examples, sparsity_param):
 
     return max_eigen + (abs_g / mu)
 
-print("lip constant", lipschitz_constant(x, groups, num_examples, 3.0))
+lip_constant = lipschitz_constant(x, groups, num_examples, sparsity_param)
+print("lip constant", )
 
 w0 = np.zeros(num_features)
 
@@ -135,7 +136,7 @@ def gen_opt_alpha(beta, groups, sparsity_param):
         bg = np.array(beta_g)
         ag = bg * sparsity_param * group_weight(group) / mu
 
-        print("b/a", beta_g, shrinkage(ag))
+        #print("b/a", beta_g, shrinkage(ag))
         # print("norm alpha", np.linalg.norm(np.array(alpha_g)))
         alpha_gs += shrinkage(ag).tolist()
     return np.array(alpha_gs)
@@ -143,21 +144,37 @@ def gen_opt_alpha(beta, groups, sparsity_param):
 print("opt alpha", gen_opt_alpha(b, groups, sparsity_param))
 
 
-
 #Equation 9
 def f_squiggle_gradient(x, y, b, groups, sparsity_param):
     opt_alpha = gen_opt_alpha(b, groups, sparsity_param)
-    return (np.transpose(x,y) * ((x * b) - y)) + (c * opt_alpha)
+    term2 = np.matmul(np.transpose(c), opt_alpha) #TODO check dimensions
+    term1 = np.matmul(np.transpose(x), ((np.matmul(x, b)) - y))
+    return term1 + term2
 
 # Algorithm
 
 weights_t = []
+beta_t = []
+z_t = []
 weights_t.append(np.zeros(num_features))
-for t in range(5):
+for t in range(10000):
     #step 1
-    gradient = f_squiggle_gradient(weights_t[i])
+    gradient = f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param)
     #step 2
-    
+    #print("gradient/lip_constant", gradient, lip_constant, gradient/lip_constant)
+    beta_t.append(weights_t[t] - (gradient/lip_constant))
+    #step 3
+    z = 0
+    for i in range(t):
+        z += (t+1) * gradient / 2  #TODO why does it say "i" instead of "t" in paper
+    z_t.append(z/lip_constant)
+    #print("z/lip_constant", z, lip_constant, z / lip_constant)
+    #step 4
+    weights = ((t+1)*beta_t[t] / (t+3)) + (2*beta_t[t] / (t+3))
+    weights_t.append(weights)
+    print("b_t", t, beta_t[t])
+print("actual b", b)
+print("lip constant", lip_constant)
 
 
 

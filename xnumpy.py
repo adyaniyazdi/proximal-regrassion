@@ -21,8 +21,8 @@ print("groups: ", groups)
 desired_accuracy = 0.01
 mu = desired_accuracy / groups.__len__()
 
-num_examples = 12
-num_features = group_overlap + (num_groups * (group_size - group_overlap))
+num_examples = 12 #N
+num_features = group_overlap + (num_groups * (group_size - group_overlap)) #J
 print("j=", num_features)
 
 x = np.arange(num_examples * num_features, dtype=np.float64).reshape((num_examples, num_features));
@@ -125,7 +125,7 @@ def shrinkage(arr):
         return arr/norm
     else:
         return arr
-
+#from lemma 1
 def gen_opt_alpha(beta, groups, sparsity_param):
     alpha_gs = []
     for group in groups:

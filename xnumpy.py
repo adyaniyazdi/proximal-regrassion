@@ -155,21 +155,24 @@ def f_squiggle_gradient(x, y, b, groups, sparsity_param):
 
 # Algorithm
 
+gradient_t = []
 weights_t = []
 beta_t = []
 z_t = []
 weights_t.append(np.zeros(num_features))
-for t in range(10000):
+for t in range(3000):
     #step 1
-    gradient = f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param)
+    gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param))
     #step 2
     #print("gradient/lip_constant", gradient, lip_constant, gradient/lip_constant)
-    beta_t.append(weights_t[t] - (gradient/lip_constant))
+    beta_t.append(weights_t[t] - (gradient_t[t]/lip_constant))
     #step 3
-    z = 0
-    for i in range(t):
-        z += (t+1) * gradient / 2  #TODO why does it say "i" instead of "t" in paper
-    z_t.append(z/lip_constant)
+    # z = 0
+    # for i in range(t):
+    #     z += (i+1) * gradient_t[i] / 2  #TODO why does it say "i" instead of "t" in paper
+    z = 0 - ((t + 1) * gradient_t[t] / 2) / lip_constant
+    if (t > 0): z += z_t[t-1]
+    z_t.append(z)
     #print("z/lip_constant", z, lip_constant, z / lip_constant)
     #step 4
     weights = ((t+1)*beta_t[t] / (t+3)) + (2*beta_t[t] / (t+3))

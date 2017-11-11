@@ -1,13 +1,14 @@
 import numpy as np
 import math
+import random
 
 
 #lambda
 sparsity_param = 0.1
 
-num_groups = 5
-group_size = 5
-group_overlap = 2
+num_groups = 10
+group_size = 10
+group_overlap = 3
 groups=[]
 
 for i in range(num_groups):
@@ -25,15 +26,16 @@ num_examples = 500 #N
 num_features = group_overlap + (num_groups * (group_size - group_overlap)) #J
 print("j=", num_features)
 
-x = np.arange(num_examples * num_features, dtype=np.float64).reshape((num_examples, num_features));
-x0 = np.arange(num_features, dtype=np.float64).reshape((num_features, 1));
-b = np.ones(num_features, dtype=np.float64)#.reshape((1, j));
-y = np.arange(num_examples, dtype=np.float64).reshape((num_examples, 1));
 
-y[1] = 5.0
-b[2] = 1
 x = np.random.normal(0, 1, (num_examples, num_features))
-b = np.random.normal(0, 1, num_features)
+#b = np.random.normal(0, 1, num_features)
+
+b = np.zeros(num_features)
+for group in groups:
+    r = random.gauss(0,1)
+    for member in group:
+        b[member] +=r
+print("org b", b)
 for i in range(num_features//2, num_features):
     b[i] = 0.0
 y = np.matmul(x,b) #TODO add epsilon
@@ -157,7 +159,7 @@ weights_t = []
 beta_t = []
 z_t = []
 weights_t.append(np.zeros(num_features))
-for t in range(3000):
+for t in range(10000):
     #step 1
     gradient = f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param)
     #step 2

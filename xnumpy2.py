@@ -39,11 +39,15 @@ for i in range(num_features//2, num_features):
 print("b", b)
 
 
+import numpy as np
+array1 = np.array([3, 1, 3.3])
+array2 = np.array([1, 2, 3])
+diff_array = np.sum(np.absolute(np.subtract(array1, array2)))
+print ('the difference =', diff_array )
+print(np.subtract(array1, array2))
+convergence = np.sum(diff_array)
 
-
-
-
-
+print("sum", convergence)
 
 
 

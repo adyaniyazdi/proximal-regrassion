@@ -160,7 +160,8 @@ weights_t = []
 beta_t = []
 z_t = []
 weights_t.append(np.zeros(num_features))
-for t in range(3000):
+
+for t in range(10000):
     #step 1
     gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param))
     #step 2
@@ -177,7 +178,13 @@ for t in range(3000):
     #step 4
     weights = ((t+1)*beta_t[t] / (t+3)) + (2*beta_t[t] / (t+3))
     weights_t.append(weights)
-    print("b_t", t, beta_t[t])
+    convergence = np.sum(np.absolute(np.subtract(beta_t[t], beta_t[t-1])))
+    #convergence = abs(beta_t[t][0] - beta_t[t-1][0])
+    print("t / convergence", t, convergence, beta_t[t][0])
+    if convergence < 0.00001 and t>1:
+        break
+print("b_t", beta_t[t])
+print("convergence",convergence)
 print("actual b", b)
 print("lip constant", lip_constant)
 

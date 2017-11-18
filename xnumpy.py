@@ -33,7 +33,7 @@ print("groups: ", groups)
 desired_accuracy = 0.01
 mu = desired_accuracy / groups.__len__()
 
-num_examples = 500 #N
+num_examples = 200 #N
 num_features = group_overlap + (num_groups * (group_size - group_overlap)) #J
 print("j=", num_features)
 
@@ -46,10 +46,10 @@ b = np.random.normal(0,1, num_features)
 #     r = random.gauss(0,1)
 #     for member in group:
 #         b[member] +=r
-for i in range(num_features//2):
-    b[i*2] = 0.0
-# for i in range(num_features//2, num_features):
-#     b[i] = 0.0
+# for i in range(num_features//2):
+#     b[i*2] = 0.0
+for i in range(num_features//2, num_features):
+    b[i] = 0.0
 y = np.matmul(x,b) #TODO add epsilon
 print("x", x)
 print("b", b)
@@ -60,6 +60,7 @@ print("y", y)
 # From top of page 4
 def group_weight(group):
     return math.sqrt(group.__len__())
+
 
 #From equation 4
 def build_c(groups, sparsity_param, num_features):
@@ -200,6 +201,7 @@ for t in range(10000):
 print("learned beta", learned_beta)
 print("convergence",convergence)
 print("actual beta", b)
+print("num cycles", t)
 #print("lip constant", lip_constant)
 
 def test(learned_beta, real_beta):

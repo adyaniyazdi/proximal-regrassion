@@ -11,70 +11,85 @@ class Parameters:
         self.group_overlap = None
         self.group_size = None
         self.num_examples = None
-params = Parameters()
-params.num_features = 6
-params.num_examples = 500 #N
-params.num_groups = 10
-params.group_size = 10
-params.group_overlap = 3
-print("nf", params.num_features)
+# params = Parameters()
+# params.num_features = 6
+# params.num_examples = 500 #N
+# params.num_groups = 10
+# params.group_size = 10
+# params.group_overlap = 3
+# print("nf", params.num_features)
 
 
 #lambda
-def generate_sample_data(params):
 
-    # num_groups = 10
-    # group_size = 10
-    # group_overlap = 3
+def generate_groups(params):
+
     groups=[]
 
     for i in range(params.num_groups):
         group_start_index = i * (params.group_size - params.group_overlap)
         groups.append(list(range(group_start_index, group_start_index + params.group_size)))
 
-    print("groups: ", groups)
-    #print(list(range(7, 17)))
-
-
-
-
-
+    # print("groups: ", groups)
     params.num_features = params.group_overlap + (params.num_groups * (params.group_size - params.group_overlap)) #J
-    print("j=", params.num_features)
+    # print("num_features=", params.num_features)
+    return groups
 
-
+def generate_training_data(beta, params):
     x = np.random.normal(0, 1, (params.num_examples, params.num_features))
-    #b = np.random.normal(0, 1, num_features)
+    # print("beta",beta)
+    y = np.matmul(x,beta) #TODO add epsilon
 
-    b = np.zeros(params.num_features)
-    for group in groups:
-        r = random.gauss(0,1)
-        for member in group:
-            b[member] +=r
-    print("org b", b)
-    for i in range(params.num_features//2, params.num_features):
-        b[i] = 0.0
-    y = np.matmul(x,b) #TODO add epsilon
-    # print("x", x)
-    # print("b", b)
-    # print("y", y)
+    return x, y
 
-    return x, y, b, groups
 
-(x, y, b, groups) = generate_sample_data(params)
+# def generate_sample_data(params):
+#
+#     groups=[]
+#
+#     for i in range(params.num_groups):
+#         group_start_index = i * (params.group_size - params.group_overlap)
+#         groups.append(list(range(group_start_index, group_start_index + params.group_size)))
+#
+#     # print("groups: ", groups)
+#     params.num_features = params.group_overlap + (params.num_groups * (params.group_size - params.group_overlap)) #J
+#     # print("num_features=", params.num_features)
+#
+#
+#     x = np.random.normal(0, 1, (params.num_examples, params.num_features))
+#     b = np.random.normal(0, 1, params.num_features)
+#
+#     # b = np.zeros(params.num_features)
+#     # for group in groups:
+#     #     r = random.gauss(0,1)
+#     #     for member in group:
+#     #         b[member] +=r
+#     # print("org b", b)
+#     for i in range(params.num_features//2, params.num_features):
+#         b[i] = 0.0
+#     y = np.matmul(x,b) #TODO add epsilon
+#     # print("x", x)
+#     # print("b", b)
+#     # print("y", y)
+#
+#     return x, y, b, groups
 
-print("x", x)
-print("b", b)
-print("y", y)
-print("groups", groups)
+# (x, y, b, groups) = generate_sample_data(params)
+
+# print("x", x)
+# print("b", b)
+# print("y", y)
+# print("groups", groups)
 ##Initialization
 
-sparsity_param = 0.1
-desired_accuracy = 0.01
-mu = desired_accuracy / groups.__len__()
+# sparsity_param = 0.1
+# desired_accuracy = 0.01
 
-def learn(x, y, groups):
+
+def learn(x, y, groups, params, sparsity_param, desired_accuracy):
     # From top of page 4
+    mu = desired_accuracy / groups.__len__()
+
     def group_weight(group):
         return math.sqrt(group.__len__())
 
@@ -109,7 +124,7 @@ def learn(x, y, groups):
         # print(weight_totals)
         return sparsity_param * max(weight_totals)
 
-    print("abs_gamma", abs_gamma(groups, params.num_examples, sparsity_param=sparsity_param))
+    # print("abs_gamma", abs_gamma(groups, params.num_examples, sparsity_param=sparsity_param))
 
 
     #From equation 10
@@ -125,31 +140,11 @@ def learn(x, y, groups):
         return max_eigen + (abs_g / mu)
 
     lip_constant = lipschitz_constant(x, groups, params.num_examples, sparsity_param)
-    print("lip constant", )
+    # print("lip constant", lip_constant)
 
     w0 = np.zeros(params.num_features)
 
-    # Algorithm steps
 
-    # def gen_alpha(beta, groups):
-    #     alpha_gs = []
-    #     for group in groups:
-    #         beta_g = []
-    #         for j in group:
-    #             beta_g.append(beta[j])
-    #         #beta_gs.append(beta_g)
-    #         norm = np.linalg.norm(np.array(beta_g))
-    #         #print("norm", norm)
-    #         alpha_g = []
-    #         for b in beta_g:
-    #             a =  b/norm if norm > 0 else 0
-    #             alpha_g.append(a)
-    #         print("b/a", beta_g, alpha_g)
-    #         #print("norm alpha", np.linalg.norm(np.array(alpha_g)))
-    #         alpha_gs += alpha_g
-    #     return alpha_gs
-    #
-    # print("alpha",gen_alpha(b, groups))
 
     def shrinkage(arr):
         norm = np.linalg.norm(arr)
@@ -172,7 +167,7 @@ def learn(x, y, groups):
             alpha_gs += shrinkage(ag).tolist()
         return np.array(alpha_gs)
 
-    print("opt alpha", gen_opt_alpha(b, groups, sparsity_param))
+    # print("opt alpha", gen_opt_alpha(b, groups, sparsity_param))
 
 
     #Equation 9
@@ -192,7 +187,7 @@ def learn(x, y, groups):
 
     start = datetime.datetime.now()
 
-    for t in range(10000):
+    for t in range(200):
         #step 1
         gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param))
         #step 2
@@ -209,9 +204,8 @@ def learn(x, y, groups):
         #step 4
         weights = ((t+1)*beta_t[t] / (t+3)) + (2*beta_t[t] / (t+3))
         weights_t.append(weights)
-        convergence = np.sum(np.absolute(np.subtract(beta_t[t], beta_t[t-1])))
-        #convergence = abs(beta_t[t][0] - beta_t[t-1][0])
-        print("t / convergence", t, convergence, beta_t[t][0])
+        convergence = np.sum(np.absolute(np.subtract(beta_t[t], beta_t[t-1]))) #TODO use reduce and l2
+        # print("t / convergence", t, convergence, beta_t[t][0])
         if convergence < 0.00001 and t>1:
             break
 
@@ -219,21 +213,26 @@ def learn(x, y, groups):
     tim = end - start
     runtime_ms = tim.seconds * 1000 + tim.microseconds/1000
 
-    print("b_t", beta_t[t])
-    print("convergence",convergence)
-    print("actual b", b)
-    print("lip constant", lip_constant)
-    return b, runtime_ms
+    learned_beta = beta_t[t]
+    # print("learned_beta", learned_beta)
+    # print("convergence",convergence)
+    # print("lip constant", lip_constant)
+    return learned_beta, runtime_ms
 
-(b, runtime) = learn(x, y, groups)
-
-print("runtime", runtime)
-print("b", b)
-
-
+# (b, runtime) = learn(x, y, groups)
+#
+# print("runtime", runtime)
+# print("b", b)
 
 
-
+def test(learned_beta, real_beta, params):
+    test_x = np.random.normal(0, 1, (params.num_examples, params.num_features))
+    actual_y = np.matmul(test_x, real_beta)  # TODO add epsilon
+    predicted_y = np.matmul(test_x, learned_beta)
+    errors = np.subtract(actual_y, predicted_y)
+    avg_error = np.sum(np.absolute(errors)) / params.num_examples
+    # print("avg_error", avg_error)
+    return avg_error
 
 
 

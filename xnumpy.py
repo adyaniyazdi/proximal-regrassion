@@ -2,9 +2,20 @@ import numpy as np
 import math
 import random
 
+class Parameters:
+    def __init__(self):
+        self.num_features = None
+        self.num_groups = None
+        self.group_overlap = None
+        self.group_size = None
+        self.num_examples = None
+params = Parameters()
+params.num_features = 6
+print("nf", params.num_features)
+
 
 #lambda
-sparsity_param = 0.1
+sparsity_param = 0.001
 
 num_groups = 10
 group_size = 10
@@ -29,15 +40,16 @@ print("j=", num_features)
 
 x = np.random.normal(0, 1, (num_examples, num_features))
 #b = np.random.normal(0, 1, num_features)
-
-b = np.zeros(num_features)
-for group in groups:
-    r = random.gauss(0,1)
-    for member in group:
-        b[member] +=r
-print("org b", b)
-for i in range(num_features//2, num_features):
-    b[i] = 0.0
+b = np.random.normal(0,1, num_features)
+# b = np.zeros(num_features)
+# for group in groups:
+#     r = random.gauss(0,1)
+#     for member in group:
+#         b[member] +=r
+for i in range(num_features//2):
+    b[i*2] = 0.0
+# for i in range(num_features//2, num_features):
+#     b[i] = 0.0
 y = np.matmul(x,b) #TODO add epsilon
 print("x", x)
 print("b", b)
@@ -181,13 +193,24 @@ for t in range(10000):
     convergence = np.sum(np.absolute(np.subtract(beta_t[t], beta_t[t-1])))
     #convergence = abs(beta_t[t][0] - beta_t[t-1][0])
     print("t / convergence", t, convergence, beta_t[t][0])
+    learned_beta = beta_t[t]
     if convergence < 0.00001 and t>1:
         break
-print("b_t", beta_t[t])
-print("convergence",convergence)
-print("actual b", b)
-print("lip constant", lip_constant)
 
+print("learned beta", learned_beta)
+print("convergence",convergence)
+print("actual beta", b)
+#print("lip constant", lip_constant)
+
+def test(learned_beta, real_beta):
+    test_x = np.random.normal(0, 1, (num_examples, num_features))
+    actual_y = np.matmul(test_x, real_beta)  # TODO add epsilon
+    predicted_y = np.matmul(test_x, learned_beta)  # TODO add epsilon
+    errors = np.subtract(actual_y, predicted_y)
+    avg_error = np.sum(np.absolute(errors)) / num_examples
+    print("avg_error", avg_error)
+    return avg_error
+test(learned_beta, b)
 
 
 

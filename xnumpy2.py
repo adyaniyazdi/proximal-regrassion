@@ -1,5 +1,7 @@
 import random
 import numpy as np
+import datetime
+import time
 import math
 # j = 7
 # n = 50
@@ -8,7 +10,7 @@ import math
 # y = numpy.zeros((n,1))
 # print(x)
 # print(y)
-
+a = datetime.datetime.now()
 num_groups = 5
 group_size = 10
 group_overlap = 3
@@ -39,6 +41,7 @@ for i in range(num_features//2, num_features):
 print("b", b)
 
 
+
 import numpy as np
 array1 = np.array([3, 1, 3.3])
 array2 = np.array([1, 2, 3])
@@ -49,8 +52,15 @@ convergence = np.sum(diff_array)
 
 print("sum", convergence)
 
+time.sleep(2)
 
 
+b = datetime.datetime.now()
+c = b - a
+print("days", c.days)
+print("microseconds", c.seconds,c.microseconds)
+g = datetime.timedelta(0, c.seconds, c.microseconds)
+print(g.)
 
 
 

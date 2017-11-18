@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import random
+import datetime
 
 
 class Parameters:
@@ -189,6 +190,8 @@ def learn(x, y, groups):
     z_t = []
     weights_t.append(np.zeros(params.num_features))
 
+    start = datetime.datetime.now()
+
     for t in range(10000):
         #step 1
         gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], groups, sparsity_param))
@@ -211,15 +214,21 @@ def learn(x, y, groups):
         print("t / convergence", t, convergence, beta_t[t][0])
         if convergence < 0.00001 and t>1:
             break
+
+    end = datetime.datetime.now()
+    tim = end - start
+    runtime_ms = tim.seconds * 1000 + tim.microseconds/1000
+
     print("b_t", beta_t[t])
     print("convergence",convergence)
     print("actual b", b)
     print("lip constant", lip_constant)
-    return b
+    return b, runtime_ms
 
+(b, runtime) = learn(x, y, groups)
 
-
-
+print("runtime", runtime)
+print("b", b)
 
 
 

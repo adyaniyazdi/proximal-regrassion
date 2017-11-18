@@ -126,11 +126,21 @@ def learn(x, y, groups, params, sparsity_param, desired_accuracy):
     def testConvergence(t, betas_t):
         if (t<2):
             return False
-        change_in_beta = np.sum(np.absolute(np.subtract(betas_t[t], betas_t[t - 1])))
+        change_arr = np.absolute(np.subtract(betas_t[t], betas_t[t - 1]))
+        change_in_beta = np.sum(change_arr)
         prior_change_in_beta = np.sum(np.absolute(np.subtract(betas_t[t-1], betas_t[t - 2])))
-        if (t % 10 == 0):
-            print("t", t, "change", change_in_beta, "first_weight:", betas_t[t][0])
-        if abs(change_in_beta - prior_change_in_beta) < 0.0000000000001: #and change_in_beta > 0.1:
+        max_change = 0.0
+        max_change_index = 0
+        beta = betas_t[t]
+        for i in range(beta.shape[0]):
+            if change_arr[i] > max_change:
+                max_change = change_arr[i]
+                max_change_index = i
+
+
+        if (t % 1 == 0):
+            print("t", t, "change", change_in_beta, "max_c", max_change, "i", max_change_index, "mc_val", betas_t[t][max_change_index])
+        if abs(change_in_beta - prior_change_in_beta) < 0.00001: #and change_in_beta > 0.1:
             print("!!! Convergence due to 2nd-degree change in beta")
             return True
         if change_in_beta < 0.0001:

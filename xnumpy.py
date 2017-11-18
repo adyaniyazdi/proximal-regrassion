@@ -37,7 +37,6 @@ num_examples = 200 #N
 num_features = group_overlap + (num_groups * (group_size - group_overlap)) #J
 print("j=", num_features)
 
-
 x = np.random.normal(0, 1, (num_examples, num_features))
 #b = np.random.normal(0, 1, num_features)
 b = np.random.normal(0,1, num_features)
@@ -60,7 +59,6 @@ print("y", y)
 # From top of page 4
 def group_weight(group):
     return math.sqrt(group.__len__())
-
 
 #From equation 4
 def build_c(groups, sparsity_param, num_features):

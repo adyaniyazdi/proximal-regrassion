@@ -12,10 +12,10 @@ def run_experiment(params, generate_beta):
 
     sparsity_param = 0.1
     desired_accuracy = 0.01
-    (learned_beta, runtime) = pr.learn(x, y, groups, params, sparsity_param, desired_accuracy)
+    (learned_beta, runtime, cycles) = pr.learn(x, y, groups, params, sparsity_param, desired_accuracy)
 
     avg_error = pr.test(learned_beta, real_beta, params)
-    print("runtime",runtime, "avg error", avg_error)
+    print("runtime",runtime, "cycles", cycles, "avg error", avg_error)
 
 def gen_half_support_beta(params, groups):
     real_beta = np.random.normal(0, 1, params.num_features)
@@ -37,9 +37,14 @@ params.group_overlap = 3
 
 # (x, y, real_beta, groups) = pr.generate_sample_data(params)
 
+repetitions = 2
+print("="*25)
 print("half support experiments:")
-for i in range(5):
+print("="*25)
+for i in range(repetitions):
     run_experiment(params, gen_half_support_beta)
+print("="*25)
 print("alternating support experiments:")
-for i in range(5):
+print("="*25)
+for i in range(repetitions):
     run_experiment(params, gen_alternating_support_beta)

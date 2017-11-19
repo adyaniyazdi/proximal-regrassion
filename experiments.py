@@ -11,16 +11,16 @@ def banner(msg):
 
 
 def run_experiment(params, generate_beta):
-    print("!!! Beginning experiment !!!")
+    # print("!!! Beginning experiment !!!")
     groups = pr.generate_groups(params)
     real_beta = generate_beta(params, groups)
     (x, y) = pr.generate_training_data(real_beta,params)
 
 
-    (learned_beta, runtime, cycles) = pr.learn(x, y, groups, params)
+    (learned_beta, runtime, cycles, convergence_type) = pr.learn(x, y, groups, params)
 
     avg_error = pr.test(learned_beta, real_beta, params)
-    print("runtime",runtime, "cycles", cycles, "avg error", avg_error)
+    print("runtime:", int(runtime), "cycles:", cycles, "avg error:", round(avg_error, 3), "convergence:", convergence_type)
 
 def gen_half_support_beta(params, groups):
     real_beta = np.random.normal(0, 1, params.num_features)
@@ -51,6 +51,13 @@ def gen_one_group_supported_beta(params, groups):
 
 
 params = pr.Parameters()
+# params.num_examples = 500 #N
+# params.num_groups = 10
+# params.group_size = 10
+# params.group_overlap = 3
+# params.sparsity_param = 0.1
+# params.desired_accuracy = 0.01
+# params.error_variance = 0.8
 params.num_examples = 500 #N
 params.num_groups = 10
 params.group_size = 10
@@ -61,20 +68,20 @@ params.error_variance = 0.8
 
 # (x, y, real_beta, groups) = pr.generate_sample_data(params)
 
-repetitions = 2
+repetitions = 8
 banner("half support experiments:")
 for i in range(repetitions):
     run_experiment(params, gen_half_support_beta)
+banner("one-group-zero experiments:")
+for i in range(repetitions):
+    run_experiment(params, gen_one_group_zero_beta)
+banner("one-group-supported experiments:")
+for i in range(repetitions):
+    run_experiment(params, gen_one_group_supported_beta)
 banner("alternating support experiments:")
 for i in range(repetitions):
     run_experiment(params, gen_alternating_support_beta)
 # banner("uniform experiments:")
 # for i in range(repetitions):
 #     run_experiment(params, gen_uniform_beta)
-banner("one-group-zero experiments:")
-for i in range(repetitions):
-    run_experiment(params, gen_one_group_zero_beta)
-# banner("one-group-supported experiments:")
-# for i in range(repetitions):
-#     run_experiment(params, gen_one_group_supported_beta)
 

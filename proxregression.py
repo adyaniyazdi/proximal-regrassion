@@ -3,6 +3,11 @@ import math
 import random
 import datetime
 
+CONV_1ST_DEG = 1
+CONV_2ND_DEG = 2
+CONV_TIME_LIMIT = 3
+CONV_NOT_DONE = 0
+
 
 class Parameters:
     def __init__(self):
@@ -134,7 +139,7 @@ def f_squiggle_gradient(x, y, b, c, groups, sparsity_param, mu):
 
 def test_convergence(t, betas_t, weights_t, z_t, gradient_t):
     if (t<2):
-        return False
+        return CONV_NOT_DONE
     change_arr = np.absolute(np.subtract(betas_t[t], betas_t[t - 1]))
     change_in_beta = np.sum(change_arr)
     prior_change_in_beta = np.sum(np.absolute(np.subtract(betas_t[t-1], betas_t[t - 2])))
@@ -146,20 +151,21 @@ def test_convergence(t, betas_t, weights_t, z_t, gradient_t):
             max_change = change_arr[i]
             max_change_index = i
 
-    if t % 100 == 0:
+    if t % 100 == -1:
         i = max_change_index
         print("t", t, "change", change_in_beta, "max_c", max_change, "i", i,
               "mc_beta", betas_t[t][i], "mc_w", weights_t[t][i], "mc_z", z_t[t][i], "mc_gr", gradient_t[t][i])
 
     if abs(change_in_beta - prior_change_in_beta) < 0.0000001 and change_in_beta > 0.01:
-        print("Convergence due to 2nd-degree change in beta")
-        return True
+        # print("Convergence due to 2nd-degree change in beta")
+        return CONV_2ND_DEG
     if change_in_beta < 0.0001:
-        print("Convergence due to 1st-degree change in beta")
-        return True
+        # print("Convergence due to 1st-degree change in beta")
+        return CONV_1ST_DEG
     if t > 2000:
-        print("No convergence, stopping")
-    return False
+        # print("No convergence, stopping")
+        return CONV_TIME_LIMIT
+    return CONV_NOT_DONE
 
 
 def learn(x, y, groups, params):
@@ -195,7 +201,8 @@ def learn(x, y, groups, params):
         #step 4
         weights = ((t+1)*beta_t[t] / (t+3)) + (2*z_t[t] / (t+3))
         weights_t.append(weights)
-        if test_convergence(t, beta_t, weights_t, z_t, gradient_t):
+        convergence_type = test_convergence(t, beta_t, weights_t, z_t, gradient_t)
+        if convergence_type:
             break
         t += 1
 
@@ -207,7 +214,7 @@ def learn(x, y, groups, params):
     # print("learned_beta", learned_beta)
     # print("convergence",convergence)
     # print("lip constant", lip_constant)
-    return learned_beta, runtime_ms, t
+    return learned_beta, runtime_ms, t, convergence_type
 
 # (b, runtime) = learn(x, y, groups)
 #

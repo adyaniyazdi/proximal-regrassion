@@ -61,13 +61,13 @@ params = pr.Parameters()
 # params.desired_accuracy = 0.01
 # params.error_variance = 0.8
 params.num_examples = 500 #N
-params.num_groups = 15
+params.num_groups = 80
 params.group_size = 10
 params.group_overlap = 3
 params.sparsity_param = 0.1
 params.desired_accuracy = 0.01
 params.noise_variance = 0.8
-params.time_limit = 5000
+params.time_limit = 20000
 
 # (x, y, real_beta, groups) = pr.generate_sample_data(params)
 

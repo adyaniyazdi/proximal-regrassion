@@ -11,6 +11,9 @@ class Parameters:
         self.group_overlap = None
         self.group_size = None
         self.num_examples = None
+        self.sparsity_param = None
+        self.desired_accuracy = None
+        self.error_variance = None
 
 def generate_groups(params):
     groups=[]
@@ -25,10 +28,10 @@ def generate_groups(params):
     return groups
 
 def generate_training_data(beta, params):
-    error_variance = 0.8 #TODO tune
+    #error_variance = 0.8 #TODO tune
     x = np.random.normal(0, 1, (params.num_examples, params.num_features))
     # print("beta",beta)
-    y = np.matmul(x,beta) + np.random.normal(0, error_variance, params.num_examples)
+    y = np.matmul(x,beta) + np.random.normal(0, params.error_variance, params.num_examples)
 
     return x, y
 
@@ -149,20 +152,22 @@ def test_convergence(t, betas_t, weights_t, z_t, gradient_t):
               "mc_beta", betas_t[t][i], "mc_w", weights_t[t][i], "mc_z", z_t[t][i], "mc_gr", gradient_t[t][i])
 
     if abs(change_in_beta - prior_change_in_beta) < 0.0000001 and change_in_beta > 0.01:
-        print("!!! Convergence due to 2nd-degree change in beta")
+        print("Convergence due to 2nd-degree change in beta")
         return True
     if change_in_beta < 0.0001:
-        print("!!! Convergence due to 1st-degree change in beta")
+        print("Convergence due to 1st-degree change in beta")
         return True
+    if t > 2000:
+        print("No convergence, stopping")
     return False
 
 
-def learn(x, y, groups, params, sparsity_param, desired_accuracy):
+def learn(x, y, groups, params):
     c = build_c(groups, 5.0, params.num_features)
     # print("c", c)
-    mu = desired_accuracy / groups.__len__()
+    mu = params.desired_accuracy / groups.__len__()
 
-    lip_constant = lipschitz_constant(x, groups, params.num_examples, sparsity_param, mu)
+    lip_constant = lipschitz_constant(x, groups, params.num_examples, params.sparsity_param, mu)
     # print("lip constant", lip_constant)
 
     gradient_t = []
@@ -173,9 +178,10 @@ def learn(x, y, groups, params, sparsity_param, desired_accuracy):
     #beta_t.append(np.zeros(params.num_features)) #TODO delete
 
     start = datetime.datetime.now()
-    for t in range(1000):
+    t = 0
+    while True:
         #step 1
-        gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], c, groups, sparsity_param, mu))
+        gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], c, groups, params.sparsity_param, mu))
         #gradient_t.append(f_squiggle_gradient(x, y, beta_t[t], groups, sparsity_param, mu)) #TODO delete
         #step 2
         #print("gradient/lip_constant", gradient, lip_constant, gradient/lip_constant)
@@ -191,7 +197,7 @@ def learn(x, y, groups, params, sparsity_param, desired_accuracy):
         weights_t.append(weights)
         if test_convergence(t, beta_t, weights_t, z_t, gradient_t):
             break
-
+        t += 1
 
     end = datetime.datetime.now()
     tim = end - start

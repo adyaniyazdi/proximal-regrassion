@@ -3,7 +3,6 @@ import random
 import proxregression as pr
 import numpy as np
 
-print("import done")
 
 def banner(msg):
     print("=" * 75)
@@ -12,13 +11,13 @@ def banner(msg):
 
 
 def run_experiment(params, generate_beta):
+    print("!!! Beginning experiment !!!")
     groups = pr.generate_groups(params)
     real_beta = generate_beta(params, groups)
     (x, y) = pr.generate_training_data(real_beta,params)
 
-    sparsity_param = 0.1
-    desired_accuracy = 0.01
-    (learned_beta, runtime, cycles) = pr.learn(x, y, groups, params, sparsity_param, desired_accuracy)
+
+    (learned_beta, runtime, cycles) = pr.learn(x, y, groups, params)
 
     avg_error = pr.test(learned_beta, real_beta, params)
     print("runtime",runtime, "cycles", cycles, "avg error", avg_error)
@@ -56,6 +55,9 @@ params.num_examples = 500 #N
 params.num_groups = 10
 params.group_size = 10
 params.group_overlap = 3
+params.sparsity_param = 0.1
+params.desired_accuracy = 0.01
+params.error_variance = 0.8
 
 # (x, y, real_beta, groups) = pr.generate_sample_data(params)
 

@@ -18,7 +18,8 @@ class Parameters:
         self.num_examples = None
         self.sparsity_param = None
         self.desired_accuracy = None
-        self.error_variance = None
+        self.noise_variance = None
+        self.time_limit = None
 
 def generate_groups(params):
     groups=[]
@@ -36,7 +37,7 @@ def generate_training_data(beta, params):
     #error_variance = 0.8 #TODO tune
     x = np.random.normal(0, 1, (params.num_examples, params.num_features))
     # print("beta",beta)
-    y = np.matmul(x,beta) + np.random.normal(0, params.error_variance, params.num_examples)
+    y = np.matmul(x,beta) + np.random.normal(0, params.noise_variance, params.num_examples)
 
     return x, y
 
@@ -162,9 +163,9 @@ def test_convergence(t, betas_t, weights_t, z_t, gradient_t):
     if change_in_beta < 0.0001:
         # print("Convergence due to 1st-degree change in beta")
         return CONV_1ST_DEG
-    if t > 2000:
-        # print("No convergence, stopping")
-        return CONV_TIME_LIMIT
+    # if t > 2000:
+    #     # print("No convergence, stopping")
+    #     return CONV_TIME_LIMIT
     return CONV_NOT_DONE
 
 
@@ -202,13 +203,19 @@ def learn(x, y, groups, params):
         weights = ((t+1)*beta_t[t] / (t+3)) + (2*z_t[t] / (t+3))
         weights_t.append(weights)
         convergence_type = test_convergence(t, beta_t, weights_t, z_t, gradient_t)
+
+        end = datetime.datetime.now()
+        tim = end - start
+        runtime_ms = tim.seconds * 1000 + tim.microseconds / 1000
+        if runtime_ms > params.time_limit:
+            convergence_type = CONV_TIME_LIMIT
         if convergence_type:
             break
         t += 1
 
-    end = datetime.datetime.now()
-    tim = end - start
-    runtime_ms = tim.seconds * 1000 + tim.microseconds/1000
+    # end = datetime.datetime.now()
+    # tim = end - start
+    # runtime_ms = tim.seconds * 1000 + tim.microseconds/1000
 
     learned_beta = beta_t[t]
     # print("learned_beta", learned_beta)

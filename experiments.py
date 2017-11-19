@@ -65,11 +65,11 @@ params.num_groups = 80
 params.group_size = 10
 params.group_overlap = 3
 params.sparsity_param = 0.1
-params.desired_accuracy = 0.01
-params.noise_variance = 0.8
-params.time_limit = 20000
+params.desired_accuracy = 1000
+params.convergence_limit = 0.0001
+params.noise_variance = 0.01
+params.time_limit = 15000
 
-# (x, y, real_beta, groups) = pr.generate_sample_data(params)
 
 repetitions = 3
 def run_experiment_set(params, gen_beta):

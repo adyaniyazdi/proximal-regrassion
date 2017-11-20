@@ -6,8 +6,6 @@ import tools
 
 verbose = False
 
-
-
 def experiment_with_fixed_params(params:pr.Parameters, gen_beta):
     # print("!!! Beginning experiment !!!")
     groups = pr.generate_groups(params)
@@ -31,9 +29,10 @@ def optimize_sp_for_fixed_beta(params:pr.Parameters, groups, real_beta):
         avg_error = pr.test(learned_beta, real_beta, params)
         return avg_error
 
+    #Optimize sparsity parameter several times (stochastic optimization)
     opt_log_params = []
     for i in range(5):
-        best_log_param = tools.minimize(f, 0.0, 12.0, 0.1)
+        best_log_param = tools.minimize(f, 0.0, 12.0, 0.3)
         opt_log_params.append(best_log_param)
         print("fixed beta optimum param", math.pow(2, best_log_param))
     # print("sparsity params for fixed beta:", opt_log_params)

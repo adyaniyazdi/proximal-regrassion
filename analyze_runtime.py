@@ -11,7 +11,7 @@ def experiment_with_fixed_params(params:pr.Parameters, gen_beta):
     # Re-run experiment with optimal sparsity parameter
     (learned_beta, runtime, cycles, convergence_type) = pr.learn(x, y, groups, params)
     avg_error = pr.test(learned_beta, real_beta, params)
-    print("Applying sp", params.sparsity_param, "runtime:", int(runtime), "cycles:", cycles, "avg error:", round(avg_error, 3), "convergence:", convergence_type)
+    print("runtime:", int(runtime), "cycles:", cycles, "avg error:", round(avg_error, 3), "convergence:", convergence_type)
 
     return runtime, cycles, avg_error, convergence_type
 

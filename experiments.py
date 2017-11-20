@@ -61,6 +61,23 @@ def gen_uniform_groups_beta(params, groups):
     # print("uniform groups beta:", real_beta)
     return real_beta
 
+def gen_sparse_groups_beta(params, groups):
+    real_beta = np.zeros(params.num_features)
+    for i in range(groups.__len__()):
+        if i % 20 == 0:
+            for j in groups[i]:
+                real_beta[j] = random.gauss(0, 1)
+    #print("sparse groups beta:", real_beta)
+    return real_beta
+
+def gen_sparse_alternating_beta(params, groups):
+    real_beta = np.zeros(params.num_features)
+    for i in range(params.num_features):
+        if i % 20 == 0:
+            real_beta[i] = random.gauss(0, 1)
+    #print("sparse alternating beta:", real_beta)
+    return real_beta
+
 
 params = pr.Parameters()
 # params.num_examples = 500 #N

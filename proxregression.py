@@ -48,7 +48,7 @@ def test(learned_beta, real_beta, params):
     actual_y = np.matmul(test_x, real_beta)  # TODO add epsilon
     predicted_y = np.matmul(test_x, learned_beta)
     errors = np.subtract(actual_y, predicted_y)
-    avg_error = np.sum(np.absolute(errors)) / params.num_examples #TODO use reduce and l2
+    avg_error = np.mean(np.absolute(errors)) #TODO use reduce and l2
     # print("avg_error", avg_error)
     return avg_error
 

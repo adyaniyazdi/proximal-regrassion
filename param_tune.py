@@ -70,10 +70,12 @@ def convergence_test(results):
 # geo_minimize(5, 2, convergence_test, [500, 10, 10, 3, 0.1,
 #              1000, 0.0001, 0.1, 1000])
 
-num_intervals = 8
+
+
+num_intervals = 5
 def scan(param_index, interval, geometric, f_gen_beta, param_arr):
     print("Reps:", reps, "Starting parameters:", param_arr)
-    for i in range(8):
+    for i in range(num_intervals):
         params = params_from_arr(param_arr)
         results = ex.run_experiment_set(params, f_gen_beta, reps)
         (runtime, cycles, err, convergence, oscillation) = results
@@ -83,18 +85,31 @@ def scan(param_index, interval, geometric, f_gen_beta, param_arr):
         else:
             param_arr[param_index] += interval
 
-# linear_scan(1, 200, [500, 10, 10, 3, 0.1,
-#                     1, 0.0001, 0.1, 1000])
+if __name__ == "__main__":
+    # linear_scan(1, 200, [500, 10, 10, 3, 0.1,
+    #                     1, 0.0001, 0.1, 1000])
 
-ex.banner("Half Support")
-scan(5, .1, True, ex.gen_half_support_beta,
-     [500, 50, 10, 3, 0.000001,
-      10000, 0.000001, 0.001, 5000])
-# ex.banner("Alternating Support")
-# scan(6, .1, True, ex.gen_alternating_support_beta,
-#      [500, 50, 10, 3, 0.000001,
-#       1, 0.1, 0.1, 1000])
-# ex.banner("Uniform groups")
-# scan(4, 4, True, ex.gen_uniform_groups_beta,
-#      [500, 20, 10, 3, 0.0000001,
-#       1000, 0.0001, 0.1, 1000])
+    # ex.banner("Half Support")
+    # scan(4, .1, True, ex.gen_half_support_beta,
+    #      [500, 50, 10, 3, 1,
+    #       10, 0.000001, 0.001, 5000])
+    # ex.banner("Alternating Suport")
+    # scan(4, .1, True, ex.gen_alternating_support_beta,
+    #      [500, 50, 10, 3, 1,
+    #       10, 0.000001, 0.001, 5000])
+    # ex.banner("Alternating Support")
+    # scan(6, .1, True, ex.gen_alternating_support_beta,
+    #      [500, 50, 10, 3, 0.000001,
+    #       1, 0.1, 0.1, 1000])
+    # ex.banner("Uniform groups")
+    # scan(4, 4, True, ex.gen_uniform_groups_beta,
+    #      [500, 20, 10, 3, 0.0000001,
+    #       1000, 0.0001, 0.1, 1000])
+    ex.banner("sparse groups")
+    scan(4, .5, True, ex.gen_sparse_groups_beta,
+         [500, 100, 10, 3, 80,
+          10, 0.000001, 0.00, 5000])
+    ex.banner("sparse alternating")
+    scan(4, .5, True, ex.gen_sparse_alternating_beta,
+         [500, 100, 10, 3, 80,
+          10, 0.000001, 0.00, 5000])

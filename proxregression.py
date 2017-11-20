@@ -21,6 +21,7 @@ class Parameters:
         self.noise_variance = None
         self.time_limit = None
         self.convergence_limit = None
+        self.training_feature_sparsity = None
 
 def generate_groups(params):
     groups=[]

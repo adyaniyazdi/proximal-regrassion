@@ -133,12 +133,17 @@ def gen_opt_alpha(beta, groups, sparsity_param, mu):
 
 
 # Equation 9
-def f_squiggle_gradient(x, y, b, c, groups, sparsity_param, mu):
+def f_squiggle_gradient(x, y, b, c, groups, sparsity_param, mu, term_xx, term_xy):
     opt_alpha = gen_opt_alpha(b, groups, sparsity_param, mu)
     term2 = np.matmul(np.transpose(c), opt_alpha) #TODO check dimensions
-    term1 = np.matmul(np.transpose(x), ((np.matmul(x, b)) - y))
+    # term1 = np.matmul(np.transpose(x), ((np.matmul(x, b)) - y))
+    term1 = np.matmul(term_xx, b) - term_xy
     return term1 + term2
 
+def term1_s_gradient(x,y):
+    term_xx = np.matmul(np.transpose(x), x)
+    term_xy = np.matmul(np.transpose(x), y)
+    return term_xx, term_xy
 
 def test_convergence(t, params, betas_t, weights_t, z_t, gradient_t):
     if (t<2):
@@ -190,9 +195,12 @@ def learn(x, y, groups, params):
 
     start = datetime.datetime.now()
     t = 0
+
+    (term_xx, term_xy) = term1_s_gradient(x, y)
+
     while True:
         #step 1
-        gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], c, groups, params.sparsity_param, mu))
+        gradient_t.append(f_squiggle_gradient(x, y, weights_t[t], c, groups, params.sparsity_param, mu, term_xx, term_xy))
         #gradient_t.append(f_squiggle_gradient(x, y, beta_t[t], groups, sparsity_param, mu)) #TODO delete
         #step 2
         #print("gradient/lip_constant", gradient, lip_constant, gradient/lip_constant)

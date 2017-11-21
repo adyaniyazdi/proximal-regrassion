@@ -24,20 +24,20 @@ if __name__ == "__main__":
     params.num_examples = 500
     time =[]
     n =[]
-    for x in range(5):
+    for x in range(4):
         params.num_examples += 500
         params.num_groups = 200
         params.group_size = 10
         params.group_overlap = 3
         params.sparsity_param = 0.0001#20
-        params.training_feature_sparsity = 10  # 1000
+        params.training_feature_sparsity = 2  # 1000
         params.desired_accuracy = 10  # 1000
         params.convergence_limit = 0.001 / params.desired_accuracy
         params.noise_variance = 0.1  # 0.1 # 0.0
         params.time_limit = 8000
 
         # tools.banner("...:")
-        (runtime, cycles, avg_error, convergence_type) = experiment_with_fixed_params(params, tools.continuous_structure_beta)
+        (runtime, cycles, avg_error, convergence_type) = experiment_with_fixed_params(params, tools.seperate_structure_beta)
         time.append(runtime/1000)
         n.append(params.num_examples)
     # tools.banner("...:")
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 # Note that using plt.subplots below is equivalent to using
 # fig = plt.figure and then ax = fig.add_subplot(111)
 fig, ax = plt.subplots()
-ax.plot(n, time)
+ax.semilogy(n, time)
 
 ax.set(xlabel='No. Of Examples', ylabel='Time (seconds)',
        title='Scalability for Prox-Grad')

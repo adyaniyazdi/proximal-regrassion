@@ -59,8 +59,9 @@ b = datetime.datetime.now()
 c = b - a
 print("days", c.days)
 print("microseconds", c.seconds,c.microseconds)
-g = datetime.timedelta(0, c.seconds, c.microseconds)
-print(g.)
+datetime.timedelta(0, c.seconds, c.microseconds)
+
+
 
 
 

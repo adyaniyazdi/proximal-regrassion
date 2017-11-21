@@ -2,7 +2,6 @@ import random
 import math
 import proxregression as pr
 import numpy as np
-import tools
 import testing as tst
 
 verbose = False

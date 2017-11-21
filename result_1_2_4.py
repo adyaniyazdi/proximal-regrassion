@@ -7,30 +7,6 @@ import proxregression as pr
 import testing as tst
 
 
-def continuous_structure_beta(params, groups):
-    real_beta = np.random.normal(0, 1, params.num_features)
-    for i in range(params.num_features // params.training_feature_sparsity, params.num_features):
-        real_beta[i] = 0.0
-    return real_beta
-
-
-def seperate_structure_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for i in range(groups.__len__()):
-        if i % 20 == 0:
-            for j in groups[i]:
-                real_beta[j] = random.gauss(0, 1)
-    #print("sparse groups beta:", real_beta)
-    return real_beta
-
-
-def unstructured_control_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for i in range(params.num_features):
-        if i % 20 == 0:
-            real_beta[i] = random.gauss(0, 1)
-    #print("sparse alternating beta:", real_beta)
-    return real_beta
 
 
 def scan_parameter(params:pr.Parameters, interval=0.5, intervals=12, reps_per_result=5):
@@ -46,16 +22,16 @@ def scan_parameter(params:pr.Parameters, interval=0.5, intervals=12, reps_per_re
         print("   PARAM:", params.sparsity_param)
         param.append(params.sparsity_param)
 
-        results = ex.run_experiment_set(params, continuous_structure_beta, reps_per_result)
+        results = ex.run_experiment_set(params, tst.continuous_structure_beta, reps_per_result)
         (runtime, cycles, err, convergence, oscillation) = results
         continuous_err.append(results[2])
         continuous_runtime.append(results[0])
 
-        results = ex.run_experiment_set(params, seperate_structure_beta, reps_per_result)
+        results = ex.run_experiment_set(params, tst.seperate_structure_beta, reps_per_result)
         seperate_err.append(results[2])
         seperate_runtime.append(results[0])
 
-        results = ex.run_experiment_set(params, unstructured_control_beta, reps_per_result)
+        results = ex.run_experiment_set(params, tst.unstructured_control_beta, reps_per_result)
         control_err.append(results[2])
         control_runtime.append(results[0])
 
@@ -100,13 +76,12 @@ params.num_groups = 50
 params.group_size = 10
 params.group_overlap = 3
 params.sparsity_param = 2048
-params.training_feature_sparsity = 2 #1000
+params.training_feature_sparsity = 10 #1000
 
 params.desired_accuracy = 10 #1000
-params.convergence_limit = 0.001/params.desired_accuracy
 params.noise_variance = 0.1 #0.1 # 0.0
 params.time_limit = 5000
-scan_parameter(params, interval=1/4, intervals=18, reps_per_result=3)
+scan_parameter(params, interval=1/4, intervals=14, reps_per_result=3)
 
 
 

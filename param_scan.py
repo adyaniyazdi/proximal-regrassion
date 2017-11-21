@@ -60,6 +60,6 @@ if __name__ == "__main__":
     #      [500, 100, 10, 3, 80,
     #       10, 0.000001, 0.00, 5000])
     ex.banner("sparse alternating")
-    scan(5, .1, True, tst.continuous_structure_beta,
-         [500, 10, 10, 3, 0.001,
-          0.001, 2, 0.0, 5000])
+    scan(1, 200, True, tst.continuous_structure_beta,
+         [500, 10, 10, 3, 20,
+          10, 2, 0.0, 5000])

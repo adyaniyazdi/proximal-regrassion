@@ -1,5 +1,4 @@
 import proxregression as pr
-import tools
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -36,14 +35,11 @@ if __name__ == "__main__":
         params.noise_variance = 0.1  # 0.1 # 0.0
         params.time_limit = 8000
 
-        # tools.banner("...:")
+
         (runtime, cycles, avg_error, convergence_type) = experiment_with_fixed_params(params, tools.seperate_structure_beta)
         time.append(runtime/1000)
         n.append(params.num_examples)
-    # tools.banner("...:")
-    # experiment_with_fixed_params(params, tools.seperate_structure_beta)
-    # tools.banner("...:")
-    # experiment_with_fixed_params(params, tools.unstructured_control_beta)
+
 
 # Data for plotting
 # t = np.arange(0.0, 2.0, 0.01)

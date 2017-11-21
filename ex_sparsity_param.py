@@ -101,11 +101,11 @@ params.group_overlap = 3
 params.sparsity_param = 2048
 params.training_feature_sparsity = 2 #1000
 
-params.desired_accuracy = 100 #1000
+params.desired_accuracy = 10 #1000
 params.convergence_limit = 0.001/params.desired_accuracy
 params.noise_variance = 0.1 #0.1 # 0.0
 params.time_limit = 5000
-scan_parameter(params, interval=1/4, intervals=14, reps_per_result=3)
+scan_parameter(params, interval=1/4, intervals=18, reps_per_result=3)
 
 
 

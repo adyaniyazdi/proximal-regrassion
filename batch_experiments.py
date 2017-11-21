@@ -1,5 +1,6 @@
 import random
 
+import testing as tst
 import proxregression as pr
 import numpy as np
 
@@ -14,14 +15,14 @@ def banner(msg):
 
 def run_experiment(params, generate_beta):
     # print("!!! Beginning experiment !!!")
-    groups = pr.generate_groups(params)
+    groups = tst.generate_groups(params)
     real_beta = generate_beta(params, groups)
-    (x, y) = pr.generate_training_data(real_beta,params)
+    (x, y) = tst.generate_training_data(real_beta,params)
 
 
     (learned_beta, runtime, cycles, convergence_type) = pr.learn(x, y, groups, params)
 
-    avg_error = pr.test(learned_beta, real_beta, params)
+    avg_error = tst.test(learned_beta, real_beta, params)
     return runtime, cycles, avg_error, convergence_type
 
 def gen_half_support_beta(params, groups):

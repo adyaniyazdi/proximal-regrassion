@@ -1,9 +1,10 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-import experiments as ex
+import batch_experiments as ex
 import math
 import proxregression as pr
+import testing as tst
 
 
 def continuous_structure_beta(params, groups):

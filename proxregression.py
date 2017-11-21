@@ -1,3 +1,7 @@
+'''.learn() implements learning algorithm exactly as described in paper.
+
+Convergence type tests are vestigial from solving the problem described in result 6'''
+
 import numpy as np
 import math
 import random
@@ -11,7 +15,7 @@ CONV_NOT_DONE = 0
 
 class Parameters:
     def __init__(self):
-        self.num_features = None
+        self.num_features = None #Auto-generated
         self.num_groups = None
         self.group_overlap = None
         self.group_size = None
@@ -20,42 +24,12 @@ class Parameters:
         self.desired_accuracy = None
         self.noise_variance = None
         self.time_limit = None
-        self.convergence_limit = None
+        self.convergence_limit = None # Auto-generated
         self.training_feature_sparsity = None
 
-def generate_groups(params):
-    groups=[]
-
-    for i in range(params.num_groups):
-        group_start_index = i * (params.group_size - params.group_overlap)
-        groups.append(list(range(group_start_index, group_start_index + params.group_size)))
-
-    # print("groups: ", groups)
-    params.num_features = params.group_overlap + (params.num_groups * (params.group_size - params.group_overlap)) #J
-    # print("num_features=", params.num_features)
-    return groups
-
-def generate_training_data(beta, params):
-    #error_variance = 0.8 #TODO tune
-    x = np.random.normal(0, 1, (params.num_examples, params.num_features))
-    # print("beta",beta)
-    y = np.matmul(x,beta) + np.random.normal(0, params.noise_variance, params.num_examples)
-
-    return x, y
-
-
-def test(learned_beta, real_beta, params):
-    test_x = np.random.normal(0, 1, (params.num_examples, params.num_features))
-    actual_y = np.matmul(test_x, real_beta)  # TODO add epsilon
-    predicted_y = np.matmul(test_x, learned_beta)
-    errors = np.subtract(actual_y, predicted_y)
-    avg_error = np.mean(np.absolute(errors)) #TODO use reduce and l2
-    # print("avg_error", avg_error)
-    return avg_error
 
 ###########################################################
 # Learning algorithm
-
 
 # From top of page 4
 def group_weight(group):
@@ -174,6 +148,8 @@ def test_convergence(t, params, betas_t, weights_t, z_t, gradient_t):
 
 
 def learn(x, y, groups, params):
+    params.convergence_limit = 0.001 / params.desired_accuracy
+
     c = build_c(groups, 5.0, params.num_features)
     # print("c", c)
     mu = params.desired_accuracy / groups.__len__()
@@ -218,15 +194,8 @@ def learn(x, y, groups, params):
         t += 1
 
     learned_beta = beta_t[t]
-    # print("learned_beta", learned_beta)
-    # print("convergence",convergence)
-    # print("lip constant", lip_constant)
     return learned_beta, runtime_ms, t, convergence_type
 
-# (b, runtime) = learn(x, y, groups)
-#
-# print("runtime", runtime)
-# print("b", b)
 
 
 

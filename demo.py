@@ -29,6 +29,7 @@ params.desired_accuracy = 100  # 1000
 params.noise_variance = 0.5  # 0.1 # 0.0
 params.time_limit = 5000
 
+
 print("Continuous structure")
 run_experiment(params, tst.continuous_structure_beta)
 print("Seperate structure")

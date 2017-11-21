@@ -129,14 +129,14 @@ def test_convergence(t, params, betas_t, weights_t, z_t, gradient_t):
             max_change = change_arr[i]
             max_change_index = i
 
-    if t % 10 == -1:
+    if t % 100 == -1:
         i = max_change_index
         print("t", t, "change", change_in_beta, "max_c", max_change, "i", i,
               "mc_beta", betas_t[t][i], "mc_w", weights_t[t][i], "mc_z", z_t[t][i], "mc_gr", gradient_t[t][i])
 
     #if abs(change_in_beta - prior_change_in_beta) < 0.00000001 and change_in_beta > 0.01:
     if abs(change_over_two_betas) < params.convergence_limit/1000 and change_in_beta > params.convergence_limit * 10:
-        # print("Convergence due to 2nd-degree change in beta")
+        print("Convergence due to 2nd-degree change in beta")
         return CONV_2ND_DEG
     if change_in_beta < params.convergence_limit:
         # print("Convergence due to 1st-degree change in beta")

@@ -1,115 +1,126 @@
 import random
-import matplotlib.pyplot as plt
-import numpy as np
-import batch_experiments as ex
 import math
 import proxregression as pr
+import numpy as np
+import tools
+import testing as tst
+
+verbose = False
 
 
-def continuous_structure_beta(params, groups):
-    real_beta = np.random.normal(0, 1, params.num_features)
-    for i in range(params.num_features // params.training_feature_sparsity, params.num_features):
-        real_beta[i] = 0.0
-    return real_beta
+def banner(msg):
+    print("=" * 75)
+    print(msg)
+    print("=" * 65)
 
-
-def seperate_structure_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for i in range(groups.__len__()):
-        if i % 20 == 0:
-            for j in groups[i]:
-                real_beta[j] = random.gauss(0, 1)
-    #print("sparse groups beta:", real_beta)
-    return real_beta
-
-
-def unstructured_control_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for i in range(params.num_features):
-        if i % 20 == 0:
-            real_beta[i] = random.gauss(0, 1)
-    #print("sparse alternating beta:", real_beta)
-    return real_beta
-
-
-
-
-params = pr.Parameters()
-params.num_examples = 500
-params.num_groups = 50
-params.group_size = 10
-params.group_overlap = 3
-params.sparsity_param = 2048
-params.training_feature_sparsity = 2 #1000
-
-params.desired_accuracy = 10 #1000
-params.convergence_limit = 0.001/params.desired_accuracy
-params.noise_variance = 0.1 #0.1 # 0.0
-params.time_limit = 5000
-
-reps_per_result=5
-print("Reps:", reps_per_result)
-def err_for_log_sparsity_param(log_sparsity_param):
-    params.sparsity_param = math.pow(2, log_sparsity_param)
-    results = ex.run_experiment_set(params, seperate_structure_beta, reps_per_result)
-    (runtime, cycles, err, convergence, oscillation) = results
-    return err
-
-
+# Generic minimizer for unknown convex function in one variable
 def minimize(f, low_lim, up_lim, accuracy):
-
     while (up_lim - low_lim > accuracy):
         difference = up_lim - low_lim
         l1 = low_lim + (difference/3.0)
         l2 = low_lim + (2*difference/3.0)
-        print("l1:", l1, "l2:", l2)
+        if verbose: print("l1:", l1, "l2:", l2)
         if (f(l1) > f(l2)):
             low_lim = l1
         else:
             up_lim = l2
     return (up_lim + low_lim)/2
 
-# opt_log_sparsity_param = minimize(err_for_log_sparsity_param, 0.0, 12.0, 2)
-# opt_sparsity_param = math.pow(2, opt_log_sparsity_param)
-# print("Optimium sparsity parameter: ", opt_sparsity_param, "= 2^",  opt_log_sparsity_param)
 
-def scan(interval=math.sqrt(2), intervals=10):
-    training_sparsity = []
-    sparsity_param = []
-    seperate_lamba = []
-    for i in range(intervals):
-        training_sparsity.append(params.training_feature_sparsity)
 
-        opt_log_sparsity_param = minimize(err_for_log_sparsity_param, 0.0, 8.0, 0.3)
-        opt_sparsity_param = math.pow(2, opt_log_sparsity_param)
-        sparsity_param.append(opt_sparsity_param)
+def experiment_with_fixed_params(params:pr.Parameters, gen_beta):
+    # print("!!! Beginning experiment !!!")
+    groups = tst.generate_groups(params)
+    real_beta = gen_beta(params, groups)
+    (x, y) = tst.generate_training_data(real_beta,params)
 
-        print("TRAINING SPARSITY:", params.training_feature_sparsity)
-        print("   Optimium sparsity parameter: ", opt_sparsity_param, "= 2^", opt_log_sparsity_param)
-        print(training_sparsity)
-        print(sparsity_param)
+    # Re-run experiment with optimal sparsity parameter
+    (learned_beta, runtime, cycles, convergence_type) = pr.learn(x, y, groups, params)
+    avg_error = tst.test(learned_beta, real_beta, params)
+    print("Performance applying sparsity param", params.sparsity_param, "with new beta")
+    print("   runtime:", int(runtime), "cycles:", cycles, "avg error:", round(avg_error, 3), "convergence:", convergence_type)
 
-        params.training_feature_sparsity *= interval
-    fig, ax = plt.subplots()
-    ax.plot(training_sparsity, sparsity_param, 'k', label='Continuous Error', color='blue')
+    return runtime, cycles, avg_error, convergence_type
 
-    # ax.legend(loc='upper left', shadow=True, fontsize='large')
-    # ax2.legend(loc='upper right', shadow=True, fontsize='large')
-    ax.legend(loc='upper left')
+def optimize_sp_for_fixed_beta(params:pr.Parameters, groups, real_beta):
+    # print("!!! Beginning experiment !!!")
+    (x, y) = tst.generate_training_data(real_beta,params)
 
-    ax.grid()
+    def f(log_sparsity_param):
+        params.sparsity_param = math.pow(2, log_sparsity_param)
+        (learned_beta, runtime, cycles, convergence_type) = pr.learn(x, y, groups, params)
+        avg_error = tst.test(learned_beta, real_beta, params)
+        return avg_error
 
-    ax.set_xlabel("Training set sparsity")
-    ax.set_ylabel(r"Optimal $\lambda$ (sparsity parameter)")  # ($MJ\,m^{-2}\,d^{-1}$)")
+    #Optimize sparsity parameter several times (stochastic optimization)
+    opt_log_params = []
+    for i in range(5):
+        best_log_param = minimize(f, 0.0, 12.0, 0.3)
+        opt_log_params.append(best_log_param)
+        print("optimizing sparsity param...", math.pow(2, best_log_param))
+    # print("sparsity params for fixed beta:", opt_log_params)
+    opt_sparsity_param = math.pow(2, np.mean(opt_log_params))
 
-    param_text = \
-        'groups={0}, group_size={1}, overlap={2}, num_examples={3}\n'.format(
-            params.num_groups, params.group_size, params.group_overlap, params.num_examples) \
-        + 'training_noise={0}, epsilon={1}'.format(
-            params.noise_variance, params.desired_accuracy)
-    fig.suptitle(param_text, fontsize=10)  # , fontsize=14, fontweight='bold')
 
-    fig.savefig("result.png")
-    plt.show()
+    # print("TRAINING SPARSITY:", params.training_feature_sparsity)
+    print("Average optimum sparsity parameter: ", opt_sparsity_param, "= 2^", np.mean(opt_log_params))
 
-scan()
+    # Re-run experiment with optimal sparsity parameter
+    params.sparsity_param = opt_sparsity_param
+    (learned_beta, runtime, cycles, convergence_type) = pr.learn(x, y, groups, params)
+    avg_error = tst.test(learned_beta, real_beta, params)
+    print("Performance on beta with optimum sparsity parameter", params.sparsity_param, "runtime:", int(runtime), "cycles:", cycles, "avg error:",
+          round(avg_error, 3), "convergence:", convergence_type)
+
+    return runtime, cycles, avg_error, convergence_type, opt_sparsity_param
+
+def run_experiment_set(params, gen_beta, repetitions):
+    total_runtime = 0.0
+    total_cycles = 0
+    total_avg_error = 0
+    total_convergence = 0
+    sparsity_params = []
+    for i in range(repetitions):
+        print("!!! Generating beta, trial:", i+1, "!!!")
+        groups = tst.generate_groups(params)
+        real_beta = gen_beta(params, groups)
+
+        (runtime, cycles, avg_error, convergence_type, opt_sparsity_param) = optimize_sp_for_fixed_beta(params, groups, real_beta)
+        if verbose: print("runtime:", int(runtime), "cycles:", cycles, "avg error:", round(avg_error, 3), "convergence:", convergence_type)
+        total_runtime += runtime
+        total_cycles += cycles
+        total_avg_error += avg_error
+        if convergence_type == pr.CONV_1ST_DEG:
+            total_convergence += 1
+        sparsity_params.append(opt_sparsity_param)
+    avg_runtime = int(total_runtime/repetitions)
+    avg_cycles = total_cycles/repetitions
+    avg_error = round(total_avg_error/repetitions, 3)
+    convergence_rate = total_convergence/repetitions
+
+    print("SUMMARY: avg_runtime:", avg_runtime, "avg_cycles:", avg_cycles,
+          "avg error:", avg_error, "convergence_rate:", convergence_rate, "sparsity param:", sparsity_params)
+    params.sparsity_param = np.mean(sparsity_params)
+    for i in range(repetitions):
+        experiment_with_fixed_params(params, gen_beta)
+
+    return avg_runtime, avg_cycles, avg_error, convergence_rate, np.mean(sparsity_params)
+
+
+if __name__ == "__main__":
+    params = pr.Parameters()
+    params.num_examples = 500
+    params.num_groups = 50
+    params.group_size = 10
+    params.group_overlap = 3
+    params.sparsity_param = 2048
+    params.training_feature_sparsity = 10  # 1000
+    params.desired_accuracy = 10  # 1000
+    params.noise_variance = 0.1  # 0.1 # 0.0
+    params.time_limit = 5000
+
+    reps = 2
+    banner("This is going to take a while")
+    run_experiment_set(params, tst.continuous_structure_beta, reps)
+
+

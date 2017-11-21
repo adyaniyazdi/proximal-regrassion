@@ -4,7 +4,7 @@ import testing as tst
 import proxregression as pr
 import numpy as np
 
-verbose = False
+verbose = True
 
 
 def banner(msg):
@@ -14,91 +14,15 @@ def banner(msg):
 
 
 def run_experiment(params, generate_beta):
-    # print("!!! Beginning experiment !!!")
     groups = tst.generate_groups(params)
     real_beta = generate_beta(params, groups)
     (x, y) = tst.generate_training_data(real_beta,params)
-
 
     (learned_beta, runtime, cycles, convergence_type) = pr.learn(x, y, groups, params)
 
     avg_error = tst.test(learned_beta, real_beta, params)
     return runtime, cycles, avg_error, convergence_type
 
-def gen_half_support_beta(params, groups):
-    real_beta = np.random.normal(0, 1, params.num_features)
-    for i in range(params.num_features // 2, params.num_features):
-        real_beta[i] = 0.0
-    return real_beta
-
-def gen_alternating_support_beta(params, groups):
-    real_beta = np.random.normal(0, 1, params.num_features)
-    for i in range(params.num_features//2):
-        real_beta[i*2] = 0.0
-    #print("alternating support beta:", real_beta)
-    return real_beta
-
-def gen_uniform_beta(params, groups):
-    return np.random.normal(0, 1, params.num_features)
-
-def gen_one_group_zero_beta(params, groups):
-    real_beta = np.random.normal(0, 1, params.num_features)
-    for j in groups[0]:
-        real_beta[j] = 0.0
-    return real_beta
-
-def gen_one_group_supported_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for j in groups[0]:
-        real_beta[j] = random.gauss(0, 1)
-    return real_beta
-
-def gen_uniform_groups_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for g in groups:
-        b = random.gauss(0, 1)
-        for j in g:
-            real_beta[j] += b
-    # print("uniform groups beta:", real_beta)
-    return real_beta
-
-def gen_sparse_groups_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for i in range(groups.__len__()):
-        if i % 20 == 0:
-            for j in groups[i]:
-                real_beta[j] = random.gauss(0, 1)
-    #print("sparse groups beta:", real_beta)
-    return real_beta
-
-def gen_sparse_alternating_beta(params, groups):
-    real_beta = np.zeros(params.num_features)
-    for i in range(params.num_features):
-        if i % 20 == 0:
-            real_beta[i] = random.gauss(0, 1)
-    #print("sparse alternating beta:", real_beta)
-    return real_beta
-
-
-params = pr.Parameters()
-# params.num_examples = 500 #N
-# params.num_groups = 10
-# params.group_size = 10
-# params.group_overlap = 3
-# params.sparsity_param = 0.1
-# params.desired_accuracy = 0.01
-# params.error_variance = 0.8
-params.num_examples = 500 #N
-params.num_groups = 10
-params.group_size = 10
-params.group_overlap = 3
-params.sparsity_param = 0.1
-params.desired_accuracy = 1000
-params.convergence_limit = 0.0001
-params.noise_variance = 1.0
-params.time_limit = 15000
-
-reps = 3
 
 def run_experiment_set(params, gen_beta, repetitions):
     total_runtime = 0.0
@@ -127,17 +51,22 @@ def run_experiment_set(params, gen_beta, repetitions):
     return avg_runtime, avg_cycles, avg_error, convergence_rate, oscillation_rate
 
 
+
+params = pr.Parameters()
+
+params.num_examples = 500 #N
+params.num_groups = 10
+params.group_size = 10
+params.group_overlap = 3
+params.sparsity_param = 0.1
+params.desired_accuracy = 1000
+params.training_feature_sparsity = 2
+params.noise_variance = 1.0
+params.time_limit = 2000
+
+reps = 5
 if __name__ == "__main__":
-    banner("half support experiments:")
-    run_experiment_set(params, gen_half_support_beta, reps)
-    # banner("one-group-zero experiments:")
-    # run_experiment_set(params, gen_one_group_zero_beta, reps)
-    # banner("one-group-supported experiments:")
-    # run_experiment_set(params, gen_one_group_supported_beta, reps)
-    banner("alternating support experiments:")
-    run_experiment_set(params, gen_alternating_support_beta, reps)
-    # banner("uniform experiments:")
-    # run_experiment_set(params, gen_uniform_beta, reps)
-    banner("uniform groups experiments:")
-    run_experiment_set(params, gen_uniform_groups_beta, reps)
+    banner("Continuous structure experiments:")
+    run_experiment_set(params, tst.continuous_structure_beta, reps)
+
 
